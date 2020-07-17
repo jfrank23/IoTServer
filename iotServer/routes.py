@@ -1,14 +1,40 @@
 from flask import render_template, request, jsonify
 from iotServer.models import Device, Field, Reading
-from datetime import datetime
+from iotServer.viewModels import DisplayDevice
+from datetime import datetime,timedelta
 from iotServer import app, db
 
 @app.route('/', methods=['GET'])
 def index_page_landing():
-    return render_template("layout.html")
+    current = datetime.now()
+    devices = Device.query.filter_by();
+    devicesToDisplay = []
+    for dev in devices:
+        latestPost = datetime.now() - timedelta(days=1)
+        for field in dev.fields:
+            temp = field.readings
+            temp.sort(key=lambda x: x.timePosted, reverse=True)
+            temp = temp[0].timePosted
+            if temp:
+                if temp > latestPost:
+                    latestPost = temp
+        if latestPost >( current.now() - timedelta(hours=1)):
+            displayDevice= DisplayDevice()
+            displayDevice.device= dev
+            displayDevice.latestPost = latestPost
+            displayDevice.fields = dev.fields
+            devicesToDisplay.append(displayDevice)
 
+    return render_template("index.html",devices=devicesToDisplay)
 
-# ------------------API-------------------------------
+@app.route('/device/<mac>', methods=['GET'])
+def devicePage(mac):
+    device=Device.query.filter_by(mac=mac).first()
+    if device:
+        return render_template("device.html", device=device)
+    else:
+        return render_template("404.html")
+# --------------------API----------------------------
 
 @app.route('/api/v1/setupDevice', methods=['POST'])
 def setupDevice():
@@ -23,7 +49,11 @@ def setupDevice():
                 db.session.commit()
                 return "created"
             else:
-                return "already exists", 302
+                existingDevice.ip = device.ip
+                existingDevice.name = device.name
+                existingDevice.devType = device.devType
+                db.session.commit()
+                return "Updated", 302
     return "error", 400
 
 
