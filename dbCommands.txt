@@ -1,0 +1,3 @@
+from iotServer import db
+from iotServer.models import Device, Field, Reading
+db.create_all()
