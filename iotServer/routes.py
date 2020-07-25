@@ -1,10 +1,11 @@
 from flask import render_template, request, jsonify
 from iotServer.models import Device, Field, Reading
 from iotServer.viewModels import DisplayDevice
-from datetime import datetime,timedelta
+from datetime import datetime, timedelta
 from iotServer import app, db
 
 @app.route('/', methods=['GET'])
+@app.route('/index.html', methods=['GET'])
 def index_page_landing():
     current = datetime.now()
     devices = Device.query.filter_by();
@@ -14,17 +15,20 @@ def index_page_landing():
         for field in dev.fields:
             temp = field.readings
             temp.sort(key=lambda x: x.timePosted, reverse=True)
-            temp = temp[0].timePosted
+            try:
+                temp = temp[0].timePosted
+            except:
+                temp=datetime.now() - timedelta(days=1)
             if temp:
                 if temp > latestPost:
                     latestPost = temp
         if latestPost >( current.now() - timedelta(hours=1)):
             displayDevice= DisplayDevice()
+            displayDevice.cleanMac = "M" + dev.mac.replace(":","")
             displayDevice.device= dev
             displayDevice.latestPost = latestPost
             displayDevice.fields = dev.fields
             devicesToDisplay.append(displayDevice)
-
     return render_template("index.html",devices=devicesToDisplay)
 
 @app.route('/device/<mac>', methods=['GET'])
@@ -80,11 +84,12 @@ def addField():
 def recieveData():
     count = 0
     if 'deviceMac' in request.json and type(request.json['deviceMac']) == str:
-        reading = Reading()
         device = Device.query.filter_by(mac=request.json['deviceMac']).first()
         fields = device.fields
+        print(request.json)
         for field in fields:
-            if field.name in request.json and type(request.json[field.name]) == float:
+            if field.name in request.json and (type(request.json[field.name]) == float or type(request.json[field.name]) == int):
+                reading = Reading()
                 reading.deviceMac = request.json['deviceMac']
                 reading.fieldId = field.id
                 reading.timePosted = datetime.now()

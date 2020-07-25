@@ -9,11 +9,11 @@
       {% for dev in devices %}
           <div class="card border-left-success shadow mb-4">
               <!-- Card Header - Accordion -->
-              <a href={{'#'+ dev.device.mac}} class="d-block card-header py-3 collapsed" data-toggle="collapse" role="button" aria-expanded="false" aria-controls={{dev.device.mac}}>
+              <a href={{'#'+dev.cleanMac}} class="d-block card-header py-3 collapsed" data-toggle="collapse" role="button" aria-expanded="false" aria-controls={{dev.cleanMac}}>
                 <h6 class="m-0 font-weight-bold text-primary">{{ dev.device.name.title() }}</h6>
               </a>
               <!-- Card Content - Collapse -->
-              <div class="collapse" id={{dev.device.mac}} style>
+              <div class="collapse" id={{dev.cleanMac}} style>
                 <div class="card-body">
                   <p>Measurements</p>
                   <ul>

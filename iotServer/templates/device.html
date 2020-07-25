@@ -1,7 +1,48 @@
 {% extends "layout.html" %}
 {% block title %}Device{% endblock %}
+{% block head %}
+    {{ super() }}
+      <script src="../static/vendor/chart.js/Chart.min.js"></script>
+{% endblock %}
 {% block content %}
 <p>MAC: {{device.mac}}</p>
 <p>IP: {{device.ip}}</p>
 <p>Name: {{device.name}}</p>
+<div>
+    <canvas id="line-chart" width="800" height="450"></canvas>
+</div>
+<script type="text/javascript">
+          $(document).ready(function(){
+            var sock = io.connect();
+
+            sock.on('draw', function(data){
+              if($('#changeButton').html() == 'stop'){
+                // get data
+                rest = data['rest_time'];
+                walk = data['walk_time'];
+                fast_walk = data['fast_walk_time'];
+                e = data['e'];
+
+                // updating chart (live)
+                updateChart(rest, walk, fast_walk);
+                updateChart2(e);
+              }
+            });
+
+            // change mode
+            $('#changeButton').on('click', function(){
+              // change mode: stop -> start
+              if($('#changeButton').html() == 'start'){
+                $('#changeButton').html('stop');
+                sock.emit('change mode', {'mode': 'start'});
+              }
+              // change mode: start -> stop
+              else{
+                $('#changeButton').html('start');
+                sock.emit('change mode', {'mode': 'stop'});
+              }
+            });
+          });
+        </script>
+
 {% endblock %}
