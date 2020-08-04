@@ -2,7 +2,7 @@ from flask import render_template, request, jsonify
 from iotServer.models import Device, Field, Reading
 from iotServer.viewModels import DisplayDevice
 from datetime import datetime, timedelta
-from iotServer import app, db
+from iotServer import app, db, socketio
 
 @app.route('/', methods=['GET'])
 @app.route('/index.html', methods=['GET'])
@@ -96,7 +96,11 @@ def recieveData():
                 reading.reading = request.json[field.name]
                 db.session.add(reading)
                 db.session.commit()
+                socketio.emit(str(reading.deviceMac),{field.name:reading.reading, 'Time' : str(reading.timePosted)})
                 count += 1
         if count:
             return "posted", 200
     return "error", 400
+
+#-------------------------------- Sockets----------------------------------
+
