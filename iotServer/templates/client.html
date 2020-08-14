@@ -1,0 +1,88 @@
+{% extends "layout.html" %}
+{% block title %}Device{% endblock %}
+{% block head %}
+    {{ super() }}
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.js"></script>
+        <script src="../static/vendor/chart.js/Chart.min.js"></script>
+{% endblock %}
+{% block content %}
+<h1>{{device.name}}</h1>
+<h4>MAC: {{device.mac}}</h4>
+<h4 id="ip">IP: {{device.ip}}</h4>
+<h4>Fields:</h4>
+<ul>
+    Field Name : Units
+    {% for field in device.fields %}
+        <li>{{field.name}} : {{field.unit}}</li>
+    {% endfor %}
+</ul>
+<div>
+    {% for field in device.fields %}
+        <canvas id={{field.name + "chart"}} width="800" height="450"></canvas>
+    {% endfor %}
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+<script type="text/javascript">
+function getRandomIntInclusive(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor(Math.random() * (max - min + 1)) + min; //The maximum is inclusive and the minimum is inclusive
+}
+function int2ip (ipInt) {
+    return ( (ipInt>>>24) +'.' + (ipInt>>16 & 255) +'.' + (ipInt>>8 & 255) +'.' + (ipInt & 255) );
+}
+    var backip = int2ip({{device.ip}});
+    var spl = backip.split(".").reverse();
+    var ip = spl.join('.');
+    document.getElementById("ip").innerHTML = "IP: "+ip;
+
+
+    {% for field in device.fields %}
+     var {{field.name}} = [];
+     var {{field.name +"label"}} = [];
+    {% endfor %}
+
+
+
+    {% for field in device.fields %}
+        var {{field.name+"v"}} = new Chart(document.getElementById('{{field.name+"chart"}}'), {
+          type: 'line',
+          data:{
+                labels:{{field.name +"label"}},
+                datasets:[{
+                    label: '{{field.unit}}',
+                    data:{{field.name}},
+                    borderColor: 'rgb(0,0,'+getRandomIntInclusive(0,240).toString()+')',
+                    backgroundColor: 'rgb(0,0,'+getRandomIntInclusive(0,240).toString()+')'
+                    }]
+                },
+          options: {
+            title: {
+              display: true,
+              text: '{{field.name}}'
+            },
+            scales: {
+                xAxes: [{
+                    type: 'time',
+                    time: {
+                        unit: 'minute'
+                    }
+                }]
+            }
+          }
+        });
+    {% endfor %}
+
+    const socket = io();
+    socket.on('{{device.mac}}',(data) =>{
+        {% for field in device.fields %}
+            if(typeof data["{{field.name}}"] !== "undefined"){
+                {{field.name}}.push(data["{{field.name}}"]);
+                {{field.name +"label"}}.push(Date.parse(data["Time"]));
+            }
+            {{field.name+"v"}}.update()
+        {% endfor %}
+    });
+</script>
+
+{% endblock %}

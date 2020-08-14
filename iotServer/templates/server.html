@@ -1,0 +1,62 @@
+{% extends "layout.html" %}
+{% block title %}Device{% endblock %}
+{% block head %}
+    {{ super() }}
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.js"></script>
+        <script src="../static/vendor/chart.js/Chart.min.js"></script>
+{% endblock %}
+{% block content %}
+<h1>{{device.name}}</h1>
+<h4>MAC: {{device.mac}}</h4>
+<h4 id="ip">IP: {{device.ip}}</h4>
+<h4>Fields:</h4>
+<ul>
+    Field Name : Units
+    {% for field in device.fields %}
+        <li>{{field.name}} : {{field.unit}}</li>
+    {% endfor %}
+</ul>
+<div>
+    {% for field in device.fields %}
+        <h5>{{field.name}}</h5>
+        <div class="row"> <p>Status:</p> <p id={{field.name + 'status'}}>{{status[field.name]}}</p></div>
+        <form id ={{field.name}}  action = "">
+            {{field.name}}: <input type="number" step="1" id={{field.name + 'val'}}>
+            <input type="submit">
+        </form>
+    {% endfor %}
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
+<script type="text/javascript">
+    function int2ip (ipInt) {
+        return ( (ipInt>>>24) +'.' + (ipInt>>16 & 255) +'.' + (ipInt>>8 & 255) +'.' + (ipInt & 255) );
+    }
+    var backip = int2ip({{device.ip}});
+    var spl = backip.split(".").reverse();
+    var ip = spl.join('.');
+    document.getElementById("ip").innerHTML = "IP: "+ip;
+
+    const socket = io();
+    socket.on('acceptedPost',(data) =>{
+        console.log(data["LED"]);
+        if(data["ip"] == "{{device.ip}}"){
+        {% for field in device.fields %}
+            if(typeof data["{{field.name}}"] !== "undefined"){
+                document.getElementById('{{field.name + 'status'}}').innerHTML = data["{{field.name}}"];
+            }
+        {% endfor %}
+        }
+    });
+    $(document).ready(function(){
+        {% for field in device.fields %}
+            $(document).on('submit', '#{{field.name}}', function(e) {
+                e.preventDefault();
+                socket.emit('post', { {{field.name}}: $({{field.name+'val'}}).val(), ip : {{device.ip}} });
+                return false;
+            });
+        {% endfor %}
+    });
+
+</script>
+
+{% endblock %}
