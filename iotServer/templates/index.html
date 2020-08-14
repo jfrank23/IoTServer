@@ -6,7 +6,7 @@
   <div class="row">
     <div class="col-4">
       <h2>Clients</h2>
-      {% for dev in devices %}
+      {% for dev in clients %}
           <div class="card border-left-success shadow mb-4">
               <!-- Card Header - Accordion -->
               <a href={{'#'+dev.cleanMac}} class="d-block card-header py-3 collapsed" data-toggle="collapse" role="button" aria-expanded="false" aria-controls={{dev.cleanMac}}>
@@ -21,7 +21,7 @@
                     <li>{{field.name.title()}} </li>
                   {% endfor %}
                   </ul>
-                    <a href={{'./device/' + dev.device.mac}}>Go To Device</a>
+                    <a href={{'./client/' + dev.device.mac}}>Go To Device</a>
                 </div>
               </div>
           </div>
@@ -31,6 +31,26 @@
     </div>
     <div class="col-4">
       <h2>Servers</h2>
+        {% for dev in servers %}
+          <div class="card border-left-warning shadow mb-4">
+              <!-- Card Header - Accordion -->
+              <a href={{'#'+dev.cleanMac}} class="d-block card-header py-3 collapsed" data-toggle="collapse" role="button" aria-expanded="false" aria-controls={{dev.cleanMac}}>
+                <h6 class="m-0 font-weight-bold text-primary">{{ dev.device.name.title() }}</h6>
+              </a>
+              <!-- Card Content - Collapse -->
+              <div class="collapse" id={{dev.cleanMac}} style>
+                <div class="card-body">
+                  <p>Parameters</p>
+                  <ul>
+                  {% for field in dev.fields %}
+                    <li>{{field.name.title()}} </li>
+                  {% endfor %}
+                  </ul>
+                    <a href={{'./server/' + dev.device.mac}}>Go To Device</a>
+                </div>
+              </div>
+          </div>
+      {% endfor %}
     </div>
   </div>
 </div>
