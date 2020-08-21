@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block title %}Delete Device{% endblock %}
+{% block content %}
+<h1>Delete</h1>
+<p>Are you sure you want to delete {{device.name}}?</p>
+<form method='post'>
+    <a href="../../index.html"><button>No</button></a>
+    <button type="submit" name="delete_button" value="Delete">Delete</button>
+</form>
+{% endblock %}

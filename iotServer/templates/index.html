@@ -21,7 +21,9 @@
                     <li>{{field.name.title()}} </li>
                   {% endfor %}
                   </ul>
-                    <a href={{'./client/' + dev.device.mac}}>Go To Device</a>
+                    <a href={{'./client/' + dev.device.mac}} class="btn btn-info btn-circle">
+                        <i class="fas fa-info-circle"></i>
+                    </a>
                 </div>
               </div>
           </div>
@@ -46,10 +48,16 @@
                     <li>{{field.name.title()}} </li>
                   {% endfor %}
                   </ul>
-                    <a href={{'./server/' + dev.device.mac}}>Go To Device</a>
+                    <a href={{'./server/' + dev.device.mac}} class="btn btn-info btn-circle">
+                        <i class="fas fa-info-circle"></i>
+                    </a>
+                    <a class="btn btn-danger btn-circle" href={{'./delete/' + dev.device.mac}}>
+                        <i class="fas fa-trash"></i>
+                    </a>
                 </div>
               </div>
           </div>
+
       {% endfor %}
     </div>
   </div>

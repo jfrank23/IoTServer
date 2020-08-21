@@ -1,4 +1,4 @@
-from flask import render_template, request, jsonify
+from flask import render_template, request, jsonify, redirect
 from iotServer.models import Device, Field, Reading
 from iotServer.viewModels import DisplayDevice
 from datetime import datetime, timedelta
@@ -55,14 +55,34 @@ def clientPage(mac):
 def serverPage(mac):
     device = Device.query.filter_by(mac=mac).first()
     if device:
-        backwardsIP = str(ipaddress.IPv4Address(int(device.ip))).split('.')
-        ip = '.'.join(backwardsIP[::-1])
         try:
+            backwardsIP = str(ipaddress.IPv4Address(int(device.ip))).split('.')
+            ip = '.'.join(backwardsIP[::-1])
             response = requests.get("http://" + ip + "/status")
         except:
             return render_template("404.html")
 
         return render_template("server.html", device=device, status=response.json())
+    else:
+        return render_template("404.html")
+
+@app.route('/delete/<mac>', methods=['GET', 'POST'])
+def serverDeletePage(mac):
+    if request.method == 'POST':
+        if request.form["delete_button"]=="Delete":
+            device = Device.query.filter_by(mac=mac).first()
+            fields = Field.query.filter_by(deviceMac = mac).all()
+            readings = Reading.query.filter_by(deviceMac = mac).all()
+            db.session.delete(device)
+            for field in fields:
+                db.session.delete(field)
+            for reading in readings:
+                db.session.delete(reading)
+            db.session.commit()
+            return redirect("/index.html")
+    device = Device.query.filter_by(mac=mac).first()
+    if device:
+        return render_template("deleteServer.html", device=device)
     else:
         return render_template("404.html")
 # --------------------API----------------------------

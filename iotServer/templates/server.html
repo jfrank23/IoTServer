@@ -6,24 +6,37 @@
         <script src="../static/vendor/chart.js/Chart.min.js"></script>
 {% endblock %}
 {% block content %}
-<h1>{{device.name}}</h1>
-<h4>MAC: {{device.mac}}</h4>
-<h4 id="ip">IP: {{device.ip}}</h4>
-<h4>Fields:</h4>
-<ul>
-    Field Name : Units
-    {% for field in device.fields %}
-        <li>{{field.name}} : {{field.unit}}</li>
-    {% endfor %}
-</ul>
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+      <h1 class="m-0 font-weight-bold text-primary">{{device.name}}</h1>
+    </div>
+    <div class="card-body">
+        <h4>MAC: {{device.mac}}</h4>
+        <h4 id="ip">IP: {{device.ip}}</h4>
+        <h4>Fields:</h4>
+        <ul>
+            Field Name : Units
+            {% for field in device.fields %}
+                <li>{{field.name}} : {{field.unit}}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
 <div>
     {% for field in device.fields %}
-        <h5>{{field.name}}</h5>
-        <div class="row"> <p>Status:</p> <p id={{field.name + 'status'}}>{{status[field.name]}}</p></div>
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+          <h5 class="m-0 font-weight-bold text-primary">{{field.name}}</h5>
+        </div>
+        <div class="card-body">
+            <div class="row"> <p>Status:</p> <p id={{field.name + 'status'}}>{{status[field.name]}}</p></div>
         <form id ={{field.name}}  action = "">
             {{field.name}}: <input type="number" step="1" id={{field.name + 'val'}}>
             <input type="submit">
         </form>
+        </div>
+    </div>
+
     {% endfor %}
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"></script>
